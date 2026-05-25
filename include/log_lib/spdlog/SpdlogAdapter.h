@@ -8,7 +8,9 @@
 
 #pragma once
 
+#include "../Export.h"
 #include "../ILogger.h"
+#include <cstdarg>
 #include <memory>
 #include <spdlog/spdlog.h>
 
@@ -22,7 +24,7 @@ namespace log_lib {
  * @note 这是 ILogger 的一个具体实现，如果需要切换到其他日志库，
  *       只需实现新的适配器类即可。
  */
-class SpdlogAdapter : public ILogger {
+class LOG_LIB_API SpdlogAdapter : public ILogger {
 public:
     /**
      * @brief 构造函数
@@ -118,6 +120,9 @@ public:
     bool shouldLog(Level level) const override;
     
 private:
+    void writeLog(spdlog::level::level_enum spd_level, Level level,
+                  const char* file, int line, const char* format, va_list args);
+
     Config config_;                              ///< 配置信息
     std::shared_ptr<spdlog::logger> logger_;    ///< spdlog 日志器实例
 };
@@ -127,7 +132,7 @@ private:
  * 
  * 用于创建 SpdlogAdapter 实例
  */
-class SpdlogFactory : public ILoggerFactory {
+class LOG_LIB_API SpdlogFactory : public ILoggerFactory {
 public:
     /**
      * @brief 创建 spdlog 适配器实例

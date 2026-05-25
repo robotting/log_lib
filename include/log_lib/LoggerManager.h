@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "Export.h"
 #include "ILogger.h"
 #include <memory>
 #include <mutex>
@@ -37,7 +38,7 @@ namespace log_lib {
  * logger->info(__FILE__, __LINE__, "Hello");
  * @endcode
  */
-class LoggerManager {
+class LOG_LIB_API LoggerManager {
 public:
     /**
      * @brief 获取单例实例
@@ -57,13 +58,11 @@ public:
      * @note 该方法线程安全
      */
     bool init(std::unique_ptr<ILoggerFactory> factory, const Config& config = Config());
-    
+
     /**
-     * @brief 使用 spdlog 初始化（便捷方法）
+     * @brief 使用 spdlog 实现初始化日志系统
      * @param config 配置参数
-     * @return 初始化成功返回 true，失败返回 false
-     * 
-     * @note 这是最常用的初始化方式，内部会创建 SpdlogFactory
+     * @return 初始化成功返回 true
      */
     bool initWithSpdlog(const Config& config = Config());
     
@@ -113,6 +112,9 @@ private:
      * @brief 析构函数（自动调用 shutdown）
      */
     ~LoggerManager();
+
+    /** @brief 在已持有 mutex_ 时关闭（避免重入死锁） */
+    void shutdownUnlocked();
     
     mutable std::mutex mutex_;              ///< 互斥锁，保证线程安全
     bool initialized_;                      ///< 初始化标志

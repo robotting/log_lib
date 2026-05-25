@@ -45,6 +45,7 @@ FetchContent_MakeAvailable(spdlog)
 # 公共头文件列表（需要导出的头文件）
 # ============================================================================
 set(PUBLIC_HEADERS
+    include/log_lib/Export.h            # 动态库导出宏
     include/log_lib/logger.h            # 统一入口头文件
     include/log_lib/ILogger.h           # 抽象接口定义
     include/log_lib/LoggerManager.h     # 日志管理器
@@ -56,6 +57,7 @@ set(PUBLIC_HEADERS
 # 源文件列表
 # ============================================================================
 set(SOURCES
+    src/logger.cpp                      # 统一入口 API 实现
     src/LoggerManager.cpp               # 管理器实现
     src/spdlog/SpdlogAdapter.cpp        # spdlog 适配器实现
 )
@@ -80,6 +82,11 @@ target_link_libraries(log_lib PRIVATE spdlog::spdlog)  # 链接 spdlog
 # 查找并链接线程库
 find_package(Threads REQUIRED)
 target_link_libraries(log_lib PRIVATE Threads::Threads)
+
+if(BUILD_SHARED_LIBS)
+    target_compile_definitions(log_lib PRIVATE LOG_LIB_BUILD_SHARED)
+    target_compile_definitions(log_lib PUBLIC LOG_LIB_SHARED)
+endif()
 
 # ============================================================================
 # 设置库属性
@@ -123,13 +130,6 @@ install(TARGETS log_lib
 #     VERSION ${PROJECT_VERSION}
 #     COMPATIBILITY SameMajorVersion      # 主版本号相同即兼容
 # )
-
-# 安装配置文件
-install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/LogLibConfig.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/LogLibConfigVersion.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/log_lib
-)
 
 # ============================================================================
 # 子目录（条件编译）
